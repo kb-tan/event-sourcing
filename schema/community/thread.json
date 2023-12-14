@@ -1,0 +1,7 @@
+{
+    "source": "seekmax.community",
+    "detail-type": "ThreadCreated",
+    "properties":  {
+        "tid": "string"
+    }
+}

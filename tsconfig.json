@@ -1,0 +1,6 @@
+{
+  "include": ["src/**/*", "examples/consumer.ts"],
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+}

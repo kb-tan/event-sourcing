@@ -1,0 +1,7 @@
+{
+    "source": "seekmax.community",
+    "detail-type": "ArticlePosted",
+    "properties":  {
+        "aid": "string"
+    }
+}

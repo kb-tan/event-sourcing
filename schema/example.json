@@ -1,0 +1,5 @@
+{
+    "source": "seekmax.<source system name>",
+    "detail-type": "<CamelCase>",
+    "properties":  { }
+}
