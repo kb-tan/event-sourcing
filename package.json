@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/kb-tan/event-sourcing#readme",
   "dependencies": {
+    "aws-cdk": "^2.115.0",
     "json-schema-to-typescript": "^13.1.1"
   }
 }

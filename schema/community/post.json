@@ -1,7 +1,8 @@
 {
-    "source": "seekmax.community",
-    "detail-type": "ArticlePosted",
+    "version": "1.0",
     "properties":  {
+        "source": "seekmax.community",
+        "detail-type": "ArticlePosted",
         "aid": "string"
     }
 }

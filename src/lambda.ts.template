@@ -1,0 +1,6 @@
+export const handler = function(event, context, callback) {
+    console.log("Received event: ", event);
+    const busEvent = event as __type__;
+
+    callback(null, busEvent);
+ }

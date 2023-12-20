@@ -1,0 +1,36 @@
+{
+  "sources": [
+    {"name": "seekmax.community"},
+    {"name": "seekmax.media"},
+    {"name": "seekmax.learning"}
+  ],
+  "eventbus": [{
+    "name": "community",
+    "topics": [ 
+      {"name": "ArticlePosted", "source": "seekmax.community"},
+      {"name": "ThreadCreated", "source": "seekmax.community"}
+    ],
+    "replays": { }
+    }, {
+    "name": "media",
+    "topics": [
+      {"name": "VideoCreated", "source": "seekmax.media"}
+    ],  
+    "replays": [{
+      "name": "Video Events",
+      "retentionDays": 30,
+      "pattern": [{"source":"seekmax.media"}, {"detail-type": "VideoCreated"}]
+    }]
+    }, {
+      "name": "learning",
+      "topics": []
+    }
+  ],
+  "subscriptions": [{
+    "name": "community-video-event",
+    "eventbus": "media",
+    "source": "seekmax.community",
+    "pattern": "VideoCreated",
+    "target": "lambda"
+   }]
+}

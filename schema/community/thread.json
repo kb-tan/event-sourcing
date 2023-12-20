@@ -1,7 +1,9 @@
 {
-    "source": "seekmax.community",
-    "detail-type": "ThreadCreated",
+    "version": "1.0",
     "properties":  {
-        "tid": "string"
+        "source": "seekmax.community",
+        "detail-type": "ThreadCreated",
+        "tid": "string",
+        "author": "string"
     }
 }
