@@ -1,3 +1,4 @@
+# need implement field validator
 eventbus:
 - name: community
   topics:

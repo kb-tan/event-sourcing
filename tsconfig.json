@@ -1,6 +1,7 @@
 {
   "include": ["src/**/*", "src/templates/consumer.ts"],
   "compilerOptions": {
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "types": ["node"]
   },
 }

@@ -6,14 +6,14 @@ import { CfnOutput } from 'aws-cdk-lib/core';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { Construct } from "constructs";
+import { EventBusProps, SubscriptionProps, IEventBus } from '../../src/config';
 
-interface EventBusStackProps extends cdk.StackProps {
-  logicalEnv: string;
+interface EventBusStackProps extends cdk.StackProps, EventBusProps, SubscriptionProps  {
 }
 
 export class EventBusStack extends cdk.Stack {
   
-  public readonly busName: CfnOutput;
+  public readonly eventBusName: CfnOutput;
   public readonly bucketName: CfnOutput;
   public readonly tableName: CfnOutput;
   public readonly logGroupName: CfnOutput;
@@ -21,8 +21,7 @@ export class EventBusStack extends cdk.Stack {
   
   constructor(scope: Construct, id: string, props?: EventBusStackProps) {
     super(scope, id, props);
-
-    const prefix = props?.logicalEnv;
+    const prefix = props?.env;
 
     // step functions state machine target
     // const stateMachineTarget = new LambdaConnector(this, 'Target', {
@@ -41,10 +40,25 @@ export class EventBusStack extends cdk.Stack {
     //   topicName: `${prefix}-deleted-entities`
     // });
 
-    // eventbridge
-    const bus = new EventBus(this, 'EventBus', {
-      eventBusName: `${prefix}-${busName}-event-bus`
+    props?.eventbus.forEach((eventBus: IEventBus) => {
+       const bus = new EventBus(this, 'EventBus', {
+        eventBusName: `${prefix}-${eventBus.name}-event-bus`
+      });
+
+      new Rule(this, 'AllEventsBusRule', {
+        name: `${prefix}-all-events-rule`,
+        eventBus: bus,
+        description: 'Rule matching all events',
+        eventPattern: {   
+          source: [{prefix: ''}]
+        },
+        targets: [{
+          id: `${prefix}-all-events-cw-logs`,
+          arn: `arn:aws:logs:${logGroup.stack.region}:${logGroup.stack.account}:log-group:${logGroup.logGroupName}`
+        }]
+      });
     });
+
 
     // rule with step function state machine as a target
     // const eventsRule = new Rule(this, 'EeventsBusRule', {
@@ -60,18 +74,7 @@ export class EventBusStack extends cdk.Stack {
 
     // rule with cloudwatch log group as a target
     // (using CFN as L2 constructor doesn't allow prefix expressions)
-    new CfnRule(this, 'AllEventsBusRule', {
-      name: `${prefix}-all-events-rule`,
-      eventBusName: bus.eventBusName,
-      description: 'Rule matching all events',
-      eventPattern: {   
-        source: [{prefix: ''}]
-      },
-      targets: [{
-        id: `${prefix}-all-events-cw-logs`,
-        arn: `arn:aws:logs:${logGroup.stack.region}:${logGroup.stack.account}:log-group:${logGroup.logGroupName}`
-      }]
-    });
+
 
     // rule for deleted entities
     // const deletedEntitiesRule = new Rule(this, 'DeletedEntitiesBusRule', {
@@ -93,29 +96,29 @@ export class EventBusStack extends cdk.Stack {
     // }));
 
     // outputs
-    this.busName = new CfnOutput(this, 'EventBusName', {
-      value: bus.eventBusName,
-      description: 'Name of the bus created for events'
-    });
+    // this.eventBusName = new CfnOutput(this, 'EventBusName', {
+    //   value: bus.eventBusName,
+    //   description: 'Name of the bus created for events'
+    // });
 
-    this.bucketName = new CfnOutput(this, 'BucketName', {
-      value: stateMachineTarget.bucket.bucketName,
-      description: 'Name of the bucket created to store the content of events'
-    });
+    // this.bucketName = new CfnOutput(this, 'BucketName', {
+    //   value: stateMachineTarget.bucket.bucketName,
+    //   description: 'Name of the bucket created to store the content of events'
+    // });
 
-    this.tableName = new CfnOutput(this, 'TableName', {
-      value: stateMachineTarget.table.tableName,
-      description: 'Name of the table created to store events'
-    });
+    // this.tableName = new CfnOutput(this, 'TableName', {
+    //   value: stateMachineTarget.table.tableName,
+    //   description: 'Name of the table created to store events'
+    // });
 
-    this.logGroupName = new CfnOutput(this, 'LogGroupName', {
-      value: logGroup.logGroupName,
-      description: 'Name of the log group created to store all events'
-    });
+    // this.logGroupName = new CfnOutput(this, 'LogGroupName', {
+    //   value: logGroup.logGroupName,
+    //   description: 'Name of the log group created to store all events'
+    // });
 
-    this.topicName = new CfnOutput(this, 'TopicName', {
-      value: topic.topicName,
-      description: 'Name of the topic created to publish deleted entities events to'
-    });
+    // this.topicName = new CfnOutput(this, 'TopicName', {
+    //   value: topic.topicName,
+    //   description: 'Name of the topic created to publish deleted entities events to'
+    // });
   }
 }
