@@ -1,0 +1,17 @@
+{
+    "properties":  {
+        "data": {
+          "type": "object",
+          "properties":  { 
+            "timestamp": {
+                "type": "string"
+            },
+            "username": {
+                "type": "string" 
+            }
+          },
+          "required": ["timestamp", "username"]
+        }
+    },
+    "required": ["data"]
+}

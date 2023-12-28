@@ -5,9 +5,11 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface Post {
-  source?: "seekmax.community";
-  "detail-type"?: "ArticlePosted";
-  aid?: "string";
-  [k: string]: unknown;
+export interface ArticlePosted {
+  data: {
+    aid: string;
+  };
+  source: "community";
+  detailType: "ArticlePosted";
+  eventBusName: "community";
 }

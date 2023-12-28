@@ -5,10 +5,12 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface Thread {
-  source?: "seekmax.community";
-  "detail-type"?: "ThreadCreated";
-  tid?: "string";
-  author?: "string";
-  [k: string]: unknown;
+export interface VideoCreated {
+  data: {
+    vid: string;
+    video_status: string;
+  };
+  source: "media";
+  detailType: "VideoCreated";
+  eventBusName: "media";
 }

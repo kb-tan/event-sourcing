@@ -5,11 +5,12 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface Base {
-  source?: "seekmax.<source system name>";
-  "detail-type"?: "<CamelCase>";
-  metadata?: {
-    [k: string]: unknown;
+export interface UserLoggedIn {
+  data: {
+    timestamp: string;
+    username: string;
   };
-  [k: string]: unknown;
+  source: "smarthire";
+  detailType: "UserLoggedIn";
+  eventBusName: "smarthire";
 }

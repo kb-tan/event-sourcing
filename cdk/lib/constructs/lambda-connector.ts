@@ -1,52 +1,35 @@
 import { Code, Runtime, Function } from "aws-cdk-lib/aws-lambda";
 import { Construct } from "constructs";
-import { EventPattern, Rule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
-import { Duration } from "aws-cdk-lib/core";
-import { Queue } from "aws-cdk-lib/aws-sqs";
+import { CfnOutput, Duration, Resource } from "aws-cdk-lib";
+import * as fs from 'fs';
+import { BaseConnector, BaseConnectorProps } from "./base-connector";
 
-
-export interface LambdaConnectorProps {
-  logicalEnv: string;
-  accountId: string;
-  eventType: string;
-  pattern: EventPattern;
+export interface LambdaConnectorProps extends BaseConnectorProps {
+  lambdaSourcePath: string;
 }
 
-const lambdaCode = (eventType: string) => (`export const handler = function(event, context, callback) {
-    console.log("Received event: ", event);
-    const busEvent = event as ${eventType};
-    callback(null, busEvent);
- }`);
+export class LambdaConnector extends BaseConnector {
 
-export class LambdaConnector extends Construct {
-
-  public readonly lambda: Function;
 
   constructor(scope: Construct, id: string, props: LambdaConnectorProps) {
-    super(scope, id);
-    const prefix = props.logicalEnv;
+    super(scope, id, props);
 
-    this.lambda = new Function(this, 'connector', {
-      functionName: `${prefix}-connector-${props.eventType}`,
+    const lambda = new Function(scope, `Connector-Lambda-${id}`, {
       runtime: Runtime.NODEJS_16_X,
       handler: 'index.handler',
-      code: Code.fromInline(lambdaCode(props.eventType)),
+      code: Code.fromInline(fs.readFileSync(props.lambdaSourcePath, 'utf8')),
     });
+      
+    this.rule.addTarget(new LambdaFunction(lambda, {
+      deadLetterQueue: this.dlq,
+      maxEventAge: Duration.hours(2),
+      retryAttempts: 2,
+    }));
 
-    const rule = new Rule(this, 'connector-rule', {
-        eventPattern: {
-          source: props.pattern.source,
-          detailType: props.pattern.detailType
-        },
-      });
-      
-      const dlq = new Queue(this, 'Queue');
-      
-      rule.addTarget(new LambdaFunction(this.lambda, {
-        deadLetterQueue: dlq, // Optional: add a dead letter queue
-        maxEventAge: Duration.hours(2), // Optional: set the maxEventAge retry policy
-        retryAttempts: 2, // Optional: set the max number of retry attempts
-      }));
+    new CfnOutput(scope, `Connector-Lambda-${id}-Arn`, {
+      value: lambda.functionArn,
+      description: "Connector Lambda Arn"
+    });
   }
 }

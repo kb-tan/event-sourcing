@@ -1,0 +1,5 @@
+eventbus:
+- name: smarthire
+  topics:
+  - name: UserLoggedIn
+    schemaFile: schema/smarthire/user-loggedin.json

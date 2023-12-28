@@ -1,0 +1,18 @@
+{
+    "version": "1.0",
+    "properties":  {
+        "data": {
+          "type": "object",
+          "properties":  { 
+            "tid": {
+                "type": "string"
+            },
+            "author": {
+                "type": "string"
+            }
+          },
+          "required": ["tid", "author"]
+        }
+    },
+    "required": ["data"]
+}

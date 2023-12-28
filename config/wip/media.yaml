@@ -1,0 +1,11 @@
+eventbus:
+- name: media
+  topics:
+  - name: VideoCreated
+    schemaFile: schema/media/video-upload.json
+  replays:
+  - name: VideoEvents
+    retentionDays: 30
+    pattern:
+      source: media
+      topic: VideoCreated

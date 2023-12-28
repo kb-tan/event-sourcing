@@ -1,10 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Pair, YAMLMap, YAMLSeq, parseDocument } from 'yaml';
+import { YAMLMap, parseDocument } from 'yaml';
+import { compile } from 'json-schema-to-typescript'
+import { LambdaConnectorProps } from '../cdk/lib/constructs/lambda-connector'
+import { SNSConnectorProps } from '../cdk/lib/constructs/sns-connector'
+import * as ejs from 'ejs';
 
 export interface ITopic {
     name: string;
-    source: string;
+    schemaFile: string;
 }
 
 export interface IReplay {
@@ -12,31 +16,40 @@ export interface IReplay {
     retentionDays: number;
     pattern: {
         source: string;
-        detailType: string;
+        topic: string;
     }
 }
 
 export interface IEventBus {
     name: string;
-    topics: [ITopic];
-    replays: [IReplay];
-    subscriptions: [ISubsubscription];
+    topics: ITopic[];
+    replays: IReplay[];
+    connectors: IConnector[];
 }
 
-export interface ISubsubscription {
+export enum ConnectorTarget {
+    EMAIL = 'email',
+    LAMBDA = 'lambda',
+    SNS = 'sns',
+    SQS = 'sqs',
+    SAGEMAKER = 'sagemaker'
+}
+
+export interface IConnector {
     name: string;
-    eventBus: string;
+    eventBusName: string;
     source: string;
-    pattern: string;
-    target: string;
+    topic: string;
+    target: ConnectorTarget;
+    targetParams: LambdaConnectorProps | SNSConnectorProps;
 }
 
 export interface EventBusProps {
-    eventbus: [IEventBus];
+    eventbus: IEventBus[];
 }
 
-export interface SubscriptionProps {
-    subscriptions: [ISubsubscription];
+export interface ConnectorProps {
+    connectors: IConnector[];
 }
 
 interface YamlFile {
@@ -53,14 +66,16 @@ const loadYamlFile = (filename: string): YamlFile => {
     return { contents, filename };
 };
 
-const looselyParseYaml = ({ yamlFile }: { yamlFile: YamlFile; }): YAMLMap<any, any> | null | undefined => {
+const looselyParseYaml = ({ yamlFile }: { yamlFile: YamlFile; }): YAMLMap<any, any> => {
     return parseDocument(yamlFile.contents).contents as YAMLMap;
 };
 
-export const parseConfig = (path): EventBusProps & SubscriptionProps => {
+export const parseConfig = (path: string): EventBusProps => {
     const parsedNode = looselyParseYaml({yamlFile: loadYamlFile(path)});
-    // fix: no field validator
-    return (JSON.parse(parsedNode.toString()));
+
+    // TODO: add field validator
+    // return ((JSON.parse(parsedNode.toString())));
+    return (constructEventBusProp(JSON.parse(parsedNode.toString())));
 //     WIP: field validator
 //     return {
 //         ...parseEventBus(parsedNode.get("eventbus")),
@@ -68,36 +83,88 @@ export const parseConfig = (path): EventBusProps & SubscriptionProps => {
 //     }
 }
 
-export const getEventBus = (config: EventBusProps & SubscriptionProps): IEventBus => {
+//TODO: refactor
+const compileTopicType = (topic: ITopic, evtBusName: string) => {
+    const json = JSON.parse(fs.readFileSync(path.join(__dirname, 'schema', topic.schemaFile), 'utf8'));
+    json.properties['source'] = evtBusName;
+    json.properties['detailType'] = topic.name;
+    json.properties['eventBusName'] = evtBusName;
+    json['required'] = json['required'].concat(['source', 'detailType', 'eventBusName']);
+    fs.mkdir(`../types/${evtBusName}`, { recursive: true }, (err) => {
+        compile(json, topic.name, {additionalProperties: false})
+            .then(ts => fs.writeFileSync(`../types/${evtBusName}/${topic.name}.d.ts`, ts))
+        if (err) throw err;
+    });
+}
+
+//TODO: refactor
+const generateSchemaIndex = (topics: Array<{
+        topic: string;
+        evtBusName: string;
+    }>) => {
+    const everyType: string = topics.map((data) => (data.topic)).join(' | ')
+    const templateFile = path.join(__dirname, 'schema', 'index.d.ts.ejs');
+    ejs.renderFile(templateFile, { topics, everyType } , {}, (err, str) => {
+        fs.writeFileSync(path.join(__dirname, '..', 'types', 'index.d.ts'), str)
+    })
+}
+
+//TODO: refactor 
+export const constructEventBusProp = (prop: EventBusProps & ConnectorProps): EventBusProps => {
+
+    const schemaMeta:Array<{ 
+        topic: string;
+        evtBusName: string;
+    }> = [];
+
+    for(const idx in prop.eventbus) {
+        const evtBus = prop.eventbus[idx];
+        const topics: ITopic[] = evtBus.topics;
+        const busName = evtBus.name;
+
+        topics.forEach((topic: ITopic) => {
+            compileTopicType(topic, busName);
+            schemaMeta.push({topic:topic.name, evtBusName: busName})
+        })
+        const sub = prop.connectors.find((sub: IConnector) => {
+            return(sub.eventBusName === busName)
+        });
+        if(sub!== undefined) {
+            if(evtBus.connectors === undefined) {
+                evtBus.connectors = [];
+            }
+            evtBus.connectors.push(sub);
+        }
+    }
+    generateSchemaIndex(schemaMeta);
     
-    return null;
+    return prop;
 }
 
-const parseEventBus = (yaml: YAMLSeq<YAMLMap>): EventBusProps => {
-    let item: YAMLMap;
-    for(item of yaml.items) {
-        parseEventBusConfig(item); 
-    }
-    return null;
-}
+// const parseEventBus = (yaml: YAMLSeq<YAMLMap>): EventBusProps => {
+//     let item: YAMLMap;
+//     for(item of yaml.items) {
+//         parseEventBusConfig(item); 
+//     }
+//     return null;
+// }
 
-const parseEventBusConfig = (ebConfig: YAMLMap) => {
-    let item: Pair;
-    for(item of ebConfig.items) {
-        console.log(item);
-    }
-}
+// const parseEventBusConfig = (ebConfig: YAMLMap) => {
+//     let item: Pair;
+//     for(item of ebConfig.items) {
+//         console.log(item);
+//     }
+// }
 
 
-export const parseSubscription = (yaml: YAMLSeq): SubscriptionProps => {
-    // console.log(yaml);
-    return null;
-}
+// export const parseSubscription = (yaml: YAMLSeq): SubscriptionProps => {
+//     return null;
+// }
 
 // const config = parseConfig('../config/config.yaml');
+
 // config.eventbus.forEach((item: IEventBus) => {
 //     console.log(item.name);
-
 // })
-// console.log(config.eventbus[0].topics);
-// console.log(config.subscriptions);
+
+// console.log(JSON.stringify(config, null," "));

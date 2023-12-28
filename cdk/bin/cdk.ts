@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { CdkStack } from '../lib/cdk-stack';
+import { EventBusStack } from '../lib/event-bus-stack';
+import { parseConfig } from '../../src/config';
 
 const app = new cdk.App();
-new CdkStack(app, 'CdkStack');
+const config = parseConfig('../config/config.yaml');
+new EventBusStack(app, 'EventBusStack', { ...config });
+// new CdkStack(app, "CdkStack");

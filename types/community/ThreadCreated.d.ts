@@ -5,8 +5,12 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface VideoUpload {
-  vid?: "string";
-  video_status?: "string";
-  [k: string]: unknown;
+export interface ThreadCreated {
+  data: {
+    tid: string;
+    author: string;
+  };
+  source: "community";
+  detailType: "ThreadCreated";
+  eventBusName: "community";
 }

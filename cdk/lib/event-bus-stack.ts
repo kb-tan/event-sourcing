@@ -1,124 +1,96 @@
-import * as cdk from 'aws-cdk-lib/core';
-import { EventBus, Rule, CfnRule, RuleTargetInput, EventField } from 'aws-cdk-lib/aws-events';
-import * as targets from 'aws-cdk-lib/aws-events-targets';
-import { LambdaConnector } from './constructs/lambda-connector';
-import { CfnOutput } from 'aws-cdk-lib/core';
+import { Stack, StackProps, CfnOutput, Duration, RemovalPolicy, Names } from 'aws-cdk-lib';
+import { EventBus, Archive } from 'aws-cdk-lib/aws-events';
+import { LambdaConnector, LambdaConnectorProps } from './constructs/lambda-connector';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { Topic } from 'aws-cdk-lib/aws-sns';
 import { Construct } from "constructs";
-import { EventBusProps, SubscriptionProps, IEventBus } from '../../src/config';
+import { EventBusProps, IEventBus, IReplay, IConnector, ConnectorTarget } from '../../src/config';
+import { SNSConnector, SNSConnectorProps } from './constructs/sns-connector';
 
-interface EventBusStackProps extends cdk.StackProps, EventBusProps, SubscriptionProps  {
-}
-
-export class EventBusStack extends cdk.Stack {
-  
+export class EventBusStack extends Stack {
+ 
   public readonly eventBusName: CfnOutput;
   public readonly bucketName: CfnOutput;
   public readonly tableName: CfnOutput;
   public readonly logGroupName: CfnOutput;
   public readonly topicName: CfnOutput;
   
-  constructor(scope: Construct, id: string, props?: EventBusStackProps) {
+  constructor(scope: Construct, id: string, busProps: EventBusProps, props?: StackProps) {
     super(scope, id, props);
-    const prefix = props?.env;
-
-    // step functions state machine target
-    // const stateMachineTarget = new LambdaConnector(this, 'Target', {
-    //   logicalEnv: prefix!,
-    //   accountId: this.account
-    // });
-
-    // cloudwatch log group target
-    const logGroup = new LogGroup(this, 'EventbussLogGroup', {
-      logGroupName: `/aws/events/${prefix}-events`,
-      retention: RetentionDays.ONE_DAY
+    const connectors:Construct[] = [];
+    const archives:Archive[] = [];
+    const _this = this;
+    
+    const logGroup = new LogGroup(this, 'EventBusLogGroup', {
+      logGroupName: `/aws/events/events-${Names.uniqueId(this)}`,
+      retention: RetentionDays.ONE_DAY,
+      removalPolicy: RemovalPolicy.DESTROY
     });
 
-    // // sns topic
-    // const topic = new Topic(this, 'DeletedEntitiesTopic', {
-    //   topicName: `${prefix}-deleted-entities`
-    // });
-
-    props?.eventbus.forEach((eventBus: IEventBus) => {
-       const bus = new EventBus(this, 'EventBus', {
-        eventBusName: `${prefix}-${eventBus.name}-event-bus`
+    busProps?.eventbus.forEach((eventBus: IEventBus) => {
+      const bus = new EventBus(this, `EventBus${eventBus.name}`, {
+        eventBusName: `${eventBus.name}`
       });
 
-      new Rule(this, 'AllEventsBusRule', {
-        name: `${prefix}-all-events-rule`,
-        eventBus: bus,
-        description: 'Rule matching all events',
-        eventPattern: {   
-          source: [{prefix: ''}]
-        },
-        targets: [{
-          id: `${prefix}-all-events-cw-logs`,
-          arn: `arn:aws:logs:${logGroup.stack.region}:${logGroup.stack.account}:log-group:${logGroup.logGroupName}`
-        }]
+      eventBus.replays?.forEach((replay: IReplay) => {
+        console.log(replay)
+        archives.push(new Archive(this, `Archive-${replay.name}`, {
+          eventPattern: {
+            detailType: [replay.pattern.topic],
+            source: [replay.pattern.source],
+          },
+          sourceEventBus: bus,
+          archiveName: replay.name,
+          retention: Duration.days(replay.retentionDays),
+        }));
       });
+
+      eventBus.connectors?.forEach((sub: IConnector) => {
+        let target;
+        const connectorName = `Connector${sub.name}`
+        if(sub.target === ConnectorTarget.LAMBDA) {
+          new LambdaConnector(_this, connectorName, {
+            name: sub.name,
+            accountId: _this.account,
+            detailType: sub.topic,
+            eventBus: bus,
+            source: sub.source,
+            lambdaSourcePath: (sub.targetParams as LambdaConnectorProps).lambdaSourcePath
+          });
+        } else if(sub.target === ConnectorTarget.SNS) {
+          const snsProps = sub.targetParams as SNSConnectorProps;
+          new SNSConnector(_this, connectorName, {
+            name: sub.name,
+            accountId: _this.account,
+            detailType: sub.topic,
+            eventBus: bus,
+            source: sub.source,
+            protocol: snsProps.protocol,
+            subscription: snsProps.subscription,
+          })
+        }
+      }) 
     });
 
+    busProps?.eventbus.forEach((eventBus: IEventBus, idx: number) => {
+      new CfnOutput(this, `EventBusName${idx}`, {
+        value: eventBus.name,
+        description: 'Event bus name'
+      })
+    });
 
-    // rule with step function state machine as a target
-    // const eventsRule = new Rule(this, 'EeventsBusRule', {
-    //   ruleName: `${prefix}-events-rule`,
-    //   description: 'Rule matching events',
-    //   eventBus: bus,
-    //   eventPattern: {      
-    //     detailType: ['Object State Change']
-    //   }
+    // connectors.forEach((connector: Construct, idx: number) => {
+    //   new CfnOutput(this, `ConnectorName${idx}`, {
+    //     value: connector.node.addr,
+    //     description: 'Connector arn'
+    //   });
     // });
 
-    // eventsRule.addTarget(new targets.SfnStateMachine(stateMachineTarget.stateMachine));
+    // archives.forEach((archive:Archive) => {
+    //   new CfnOutput(this, `Archive ${archive.archiveName} name`, {
+    //     value: archive.archiveName,
+    //     description: 'Archive name'
+    //   });
+    // })
 
-    // rule with cloudwatch log group as a target
-    // (using CFN as L2 constructor doesn't allow prefix expressions)
-
-
-    // rule for deleted entities
-    // const deletedEntitiesRule = new Rule(this, 'DeletedEntitiesBusRule', {
-    //   ruleName: `${prefix}-deleted-entities-rule`,
-    //   description: 'Rule matching events for delete operations',
-    //   eventBus: bus,
-    //   eventPattern: {      
-    //     detailType: ['Object State Change'],
-    //     detail: {
-    //       operation: ['delete']
-    //     }
-    //   }
-    // });
-
-    // deletedEntitiesRule.addTarget(new targets.SnsTopic(topic, {
-    //   message: RuleTargetInput.fromText(
-    //     `Entity with id ${EventField.fromPath('$.detail.entity-id')} has been deleted by ${EventField.fromPath('$.detail.author')}`
-    //   )
-    // }));
-
-    // outputs
-    // this.eventBusName = new CfnOutput(this, 'EventBusName', {
-    //   value: bus.eventBusName,
-    //   description: 'Name of the bus created for events'
-    // });
-
-    // this.bucketName = new CfnOutput(this, 'BucketName', {
-    //   value: stateMachineTarget.bucket.bucketName,
-    //   description: 'Name of the bucket created to store the content of events'
-    // });
-
-    // this.tableName = new CfnOutput(this, 'TableName', {
-    //   value: stateMachineTarget.table.tableName,
-    //   description: 'Name of the table created to store events'
-    // });
-
-    // this.logGroupName = new CfnOutput(this, 'LogGroupName', {
-    //   value: logGroup.logGroupName,
-    //   description: 'Name of the log group created to store all events'
-    // });
-
-    // this.topicName = new CfnOutput(this, 'TopicName', {
-    //   value: topic.topicName,
-    //   description: 'Name of the topic created to publish deleted entities events to'
-    // });
   }
 }

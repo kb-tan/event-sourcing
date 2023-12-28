@@ -1,8 +1,0 @@
-{
-    "source": "seekmax.media",
-    "detail-type": "VideoUploaded",
-    "properties":  {
-        "vid": "string",
-        "video_status": "string" 
-    }
-}

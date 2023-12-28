@@ -1,0 +1,15 @@
+{
+    "version": "1.0",
+    "properties":  {
+        "data": {
+          "type": "object",
+          "properties":  { 
+            "aid": {
+                "type": "string"
+            }
+          },
+          "required": ["aid"]
+        }
+    },
+    "required": ["data"]
+}

@@ -1,27 +1,48 @@
-# need implement field validator
+# TODO: need implement field validator
 eventbus:
-- name: community
+- name: smarthire
   topics:
+  - name: UserLoggedIn
+    schemaFile: smarthire/user-loggedin.json
+- name: community
+  topics: 
   - name: ArticlePosted
-    source: seekmax.community
+    schemaFile: community/post.json
   - name: ThreadCreated
-    source: seekmax.community
-  replays: {}
+    schemaFile: community/thread.json
 - name: media
   topics:
   - name: VideoCreated
-    source: seekmax.media
+    schemaFile: media/video-upload.json
   replays:
-  - name: Video Events
+  - name: VideoEvents
     retentionDays: 30
     pattern:
-    - source: seekmax.media
-    - detail-type: VideoCreated
-- name: learning
-  topics: []
-subscriptions:
-- name: community-media-event
-  eventbus: media
-  source: seekmax.community
-  pattern: VideoCreated
+      source: media
+      topic: VideoCreated
+# - name: learning
+#   topics: []
+connectors:
+- name: example1-subs-VideoCreated
+  eventBusName: media
+  source: media
+  topic: VideoCreated
   target: lambda
+  targetParams:
+    lambdaSourcePath: dist/cdk/connector/example1.js
+- name: example2-subs-ArticlePosted
+  eventBusName: community
+  source: community
+  topic: ArticlePosted
+  target: lambda
+  targetParams:
+    lambdaSourcePath: dist/cdk/connector/example2.js
+- name: example-subs-ArticlePosted
+  eventBusName: community
+  source: community 
+  topic: ArticlePosted
+  target: sns
+  targetParams:
+    protocol: email
+    subscription: kobtan@seekasia.com
+

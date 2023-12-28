@@ -1,0 +1,14 @@
+/* eslint-disable */
+// Auto generate code, DO NOT MODIFY
+
+<% topics.forEach(function(data) { -%>
+import { <%= data.topic -%> as _<%= data.topic -%> } from './<%= data.evtBusName -%>/<%= data.topic -%>'
+<% }); %>
+declare namespace EventBusSchemaTypes {
+<% topics.forEach(function(data) { -%>
+    type <%= data.topic -%> = _<%= data.topic -%>;
+<% }); %>
+    type Every = <%= everyType %>
+}
+
+export = EventBusSchemaTypes;

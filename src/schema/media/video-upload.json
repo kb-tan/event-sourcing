@@ -1,0 +1,17 @@
+{
+    "properties":  {
+        "data": {
+          "type": "object",
+          "properties":  { 
+            "vid": {
+                "type": "string"
+            },
+            "video_status": {
+                "type": "string"
+            }
+          },
+          "required": ["vid", "video_status"]
+        }
+    },
+    "required": ["data"]
+}

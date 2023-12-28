@@ -1,0 +1,15 @@
+eventbus:
+- name: community
+  topics: 
+  - name: ArticlePosted
+    schemaFile: schema/community/post.json
+  - name: ThreadCreated
+    schemaFile: schema/community/thread.json
+
+subscriptions:
+- name: community-media-event
+  eventBusName: media
+  source: community
+  topic: VideoCreated
+  target: lambda
+  lambdaSourcePath: dist/cdk/connector/example.js
