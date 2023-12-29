@@ -1,0 +1,17 @@
+{
+    "properties":  {
+        "data": {
+          "type": "object",
+          "properties":  { 
+            "candidateId": {
+                "type": "string"
+            },
+            "moduleId": {
+                "type": "string"
+            }
+          },
+          "required": ["candidateId", "moduleId"]
+        }
+    },
+    "required": ["data"]
+}

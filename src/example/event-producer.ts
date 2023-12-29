@@ -69,6 +69,24 @@ export const putEvents = async (
     console.log(response);
   }
 
+
+  const sendLearningTrendEvent = async () => {
+    const source = "learning";
+    const eventBusName = "learning"
+    const event: EventTypes.LearningTrend = {
+      data: {
+        candidateId: `candidateId-${Math.floor(Math.random() * 10000)}`,
+        moduleId: `moduleId-${Math.floor(Math.random() * 10000)}`
+      },
+      source,
+      "detailType": "LearningTrend",
+      eventBusName: "learning"
+  }
+    const sender = new EventSender<EventTypes.LearningTrend>(source, eventBusName);
+    const response = await sender.sendEvent(event);
+    console.log(response);
+  }
+
   const opt = process.argv[2];
   if(opt === "media") {
     sendMediaEvent();
@@ -76,4 +94,8 @@ export const putEvents = async (
 
   if(opt === "community") {
     sendCommunityEvent();
+  }
+
+  if(opt === "learning") {
+    sendLearningTrendEvent();
   }

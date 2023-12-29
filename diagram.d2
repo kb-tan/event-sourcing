@@ -1,0 +1,60 @@
+Bus.*.shape: queue
+Bus.style.border-radius : 8
+Bus.smarthire -- Schema.UserLoggedIn: has UserLoggedIn {
+            style: {
+                stroke-dash: 0
+            }
+        }
+Schema.style.border-radius : 8
+Schema.*.shape: page
+Connector.lambda.example2-subs-ArticlePosted -> Bus.community: subscribe-to ArticlePosted {
+            style: {
+                stroke-dash: 4
+            }
+        }
+Connector.*.shape: square
+Connector.sns.*.icon: https://icons.terrastruct.com/aws%2FCompute%2FAWS-Lambda.svg
+Connector.lambda.*.icon: https://icons.terrastruct.com/aws%2FApplication%20Integration%2FAmazon-Simple-Notification-Service-SNS.svg
+Connector.style.border-radius : 8
+Connector.sns.example-subs-ArticlePosted -> Bus.community: subscribe-to ArticlePosted {
+            style: {
+                stroke-dash: 4
+            }
+        }
+Bus.community -- Schema.ArticlePosted: has ArticlePosted {
+            style: {
+                stroke-dash: 0
+            }
+        }
+Bus.community -- Schema.ThreadCreated: has ThreadCreated {
+            style: {
+                stroke-dash: 0
+            }
+        }
+Connector.lambda.example1-subs-VideoCreated -> Bus.media: subscribe-to VideoCreated {
+            style: {
+                stroke-dash: 4
+            }
+        }
+Bus.media -- Schema.VideoCreated: has VideoCreated {
+            style: {
+                stroke-dash: 0
+            }
+        }
+Bus.media -- Archive.VideoEvents: has VideoCreated {
+            style: {
+                stroke-dash: 0
+            }
+        }
+Archive.style.border-radius : 8
+Archive.*.shape: cylinder
+Connector.sns.razaly-subs-LearningTrend -> Bus.learning: subscribe-to LearningTrend {
+            style: {
+                stroke-dash: 4
+            }
+        }
+Bus.learning -- Schema.LearningTrend: has LearningTrend {
+            style: {
+                stroke-dash: 0
+            }
+        }

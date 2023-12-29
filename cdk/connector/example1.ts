@@ -1,8 +1,8 @@
 import { Handler } from 'aws-lambda';
 
-import { VideoCreated } from '../../types';
+import * as allTypes from '../../types';
 
-export const handler: Handler = async (busEvent: VideoCreated, context, callback) => {
+export const handler: Handler = async (busEvent: allTypes.VideoCreated, context, callback) => {
     console.log("Received event: ", busEvent);
     console.log("vid: ", busEvent.data.vid);
     console.log("status: ", busEvent.data.video_status);

@@ -20,8 +20,10 @@ eventbus:
     pattern:
       source: media
       topic: VideoCreated #TODO: Support multiple topic
-# - name: learning
-#   topics: []
+- name: learning
+  topics:
+  - name: LearningTrend
+    schemaFile: learning/learning-trend.json
 connectors:
 - name: example1-subs-VideoCreated
   eventBusName: media
@@ -45,4 +47,11 @@ connectors:
   targetParams:
     protocol: email
     subscription: kobtan@seekasia.com
-
+- name: razaly-subs-LearningTrend
+  eventBusName: learning
+  source: learning 
+  topic: LearningTrend
+  target: sns
+  targetParams:
+    protocol: email
+    subscription: razaly@seekasia.com

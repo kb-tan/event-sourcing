@@ -18,6 +18,7 @@ class WritableStreamSet {
     flush() {
         this.set.forEach((msg) => {
             this.stream.write(msg);
+            this.stream.write('\n');
         })
         this.set = new Set();
         this.stream.end();
