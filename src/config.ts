@@ -126,15 +126,15 @@ export const constructEventBusProp = (prop: EventBusProps & ConnectorProps): Eve
             compileTopicType(topic, busName);
             schemaMeta.push({topic:topic.name, evtBusName: busName})
         })
-        const sub = prop.connectors.find((sub: IConnector) => {
-            return(sub.eventBusName === busName)
+
+        const subs = prop.connectors.filter((sub: IConnector) => {
+            return(sub.eventBusName === busName);
         });
-        if(sub!== undefined) {
-            if(evtBus.connectors === undefined) {
-                evtBus.connectors = [];
-            }
-            evtBus.connectors.push(sub);
+        
+        if(evtBus.connectors === undefined) {
+            evtBus.connectors = [];
         }
+        evtBus.connectors = [...evtBus.connectors, ...subs];
     }
     generateSchemaIndex(schemaMeta);
     

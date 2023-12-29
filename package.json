@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:produce": "ts-node src/example/event-producer.ts"
+    "test:produce": "ts-node src/example/event-producer.ts",
+    "generate:diagram": "ts-node src/diagram.ts"
   },
   "repository": {
     "type": "git",

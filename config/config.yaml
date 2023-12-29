@@ -19,7 +19,7 @@ eventbus:
     retentionDays: 30
     pattern:
       source: media
-      topic: VideoCreated
+      topic: VideoCreated #TODO: Support multiple topic
 # - name: learning
 #   topics: []
 connectors:
