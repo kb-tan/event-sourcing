@@ -11,7 +11,7 @@ export interface ITopic {
     schemaFile: string;
 }
 
-export interface IReplay {
+export interface IArchive {
     name: string;
     retentionDays: number;
     pattern: {
@@ -23,7 +23,7 @@ export interface IReplay {
 export interface IEventBus {
     name: string;
     topics: ITopic[];
-    replays: IReplay[];
+    archives: IArchive[];
     connectors: IConnector[];
 }
 

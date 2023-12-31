@@ -1,4 +1,4 @@
-import { IConnector, IEventBus, IReplay, ITopic, parseConfig } from './config';
+import { IConnector, IEventBus, IArchive, ITopic, parseConfig } from './config';
 import * as fs from 'fs';
 const config = parseConfig('../config/config.yaml');
 
@@ -133,7 +133,7 @@ class Bus implements Node {
     public readonly sharp = `${this.namespace}.*.shape: queue`
     public readonly style = `${this.namespace}.style.border-radius : 8`
 
-    constructor(name: string, _connectors: IConnector[], _archives: IReplay[], _schemas: ITopic[]) {
+    constructor(name: string, _connectors: IConnector[], _archives: IArchive[], _schemas: ITopic[]) {
         this.name = `${this.namespace}.${name}`;
         // console.log(_connectors);
         if(_connectors) { 
@@ -224,7 +224,7 @@ const generate = () => {
     const stream:WritableStreamSet = new WritableStreamSet(writeStream);
     // console.log(config.eventbus);
     for(const bus of config.eventbus) {
-      const eventBus = new Bus(bus.name, bus.connectors, bus.replays, bus.topics);
+      const eventBus = new Bus(bus.name, bus.connectors, bus.archives, bus.topics);
       eventBus.printNode(stream);
     }
    stream.flush(); 

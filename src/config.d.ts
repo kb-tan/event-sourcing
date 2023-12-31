@@ -3,7 +3,7 @@ export interface ITopic {
     name: string;
     source: string;
 }
-export interface IReplay {
+export interface IArchive {
     name: string;
     retentionDays: number;
     pattern: {
@@ -14,7 +14,7 @@ export interface IReplay {
 export interface IEventBus {
     name: string;
     topics: ITopic[];
-    replays: IReplay[];
+    archives: IArchive[];
     subscriptions: ISubsubscription[];
 }
 export interface ISubsubscription {

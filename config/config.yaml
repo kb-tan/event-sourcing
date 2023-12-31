@@ -14,7 +14,7 @@ eventbus:
   topics:
   - name: VideoCreated
     schemaFile: media/video-upload.json
-  replays:
+  archives:
   - name: VideoEvents
     retentionDays: 30
     pattern:

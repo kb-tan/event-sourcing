@@ -3,7 +3,7 @@ import { EventBus, Archive } from 'aws-cdk-lib/aws-events';
 import { LambdaConnector, LambdaConnectorProps } from './constructs/lambda-connector';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Construct } from "constructs";
-import { EventBusProps, IEventBus, IReplay, IConnector, ConnectorTarget } from '../../src/config';
+import { EventBusProps, IEventBus, IArchive, IConnector, ConnectorTarget } from '../../src/config';
 import { SNSConnector, SNSConnectorProps } from './constructs/sns-connector';
 
 export class EventBusStack extends Stack {
@@ -31,16 +31,16 @@ export class EventBusStack extends Stack {
         eventBusName: `${eventBus.name}`
       });
 
-      eventBus.replays?.forEach((replay: IReplay) => {
-        console.log(replay)
-        archives.push(new Archive(this, `Archive-${replay.name}`, {
+      eventBus.archives?.forEach((archive: IArchive) => {
+        console.log(archive)
+        archives.push(new Archive(this, `Archive-${archive.name}`, {
           eventPattern: {
-            detailType: [replay.pattern.topic],
-            source: [replay.pattern.source],
+            detailType: [archive.pattern.topic],
+            source: [archive.pattern.source],
           },
           sourceEventBus: bus,
-          archiveName: replay.name,
-          retention: Duration.days(replay.retentionDays),
+          archiveName: archive.name,
+          retention: Duration.days(archive.retentionDays),
         }));
       });
 
