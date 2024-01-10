@@ -39,6 +39,7 @@ export const putEvents = async (
   const sendCommunityEvent = async () => {
     const source = "community";
     const eventBusName = "community"
+    
     const event: ArticlePosted = {
       data: {
         aid: `${Math.floor(Math.random() * 10000)}`,
@@ -48,6 +49,20 @@ export const putEvents = async (
       eventBusName: "community"
   }
     const sender = new EventSender<ArticlePosted>(source, eventBusName);
+    const response = await sender.sendEvent(event);
+    console.log(response);
+  }
+
+  const sendTalentPlacementEvent = async () => {
+    const source = "prohire";
+    const eventBusName = "prohire"
+    const event: EventTypes.TalentPlacement = {
+      data: {
+        talentId: `talentId-${Math.floor(Math.random() * 10000)}`,
+        placement_status: "created"
+      },
+  }
+    const sender = new EventSender<EventTypes.TalentPlacement>(source, eventBusName);
     const response = await sender.sendEvent(event);
     console.log(response);
   }
@@ -73,6 +88,7 @@ export const putEvents = async (
   const sendLearningTrendEvent = async () => {
     const source = "learning";
     const eventBusName = "learning"
+    
     const event: EventTypes.LearningTrend = {
       data: {
         candidateId: `candidateId-${Math.floor(Math.random() * 10000)}`,
@@ -87,6 +103,26 @@ export const putEvents = async (
     console.log(response);
   }
 
+  const sendMachineLearningEvent = async () => {
+    const source = "jeffrey-machine-learning";
+    const eventBusName = "jeffrey-machine-learning"
+    
+    const event: EventTypes.AnyEvent = {
+      data: {
+        eventId: `anyId-${Math.floor(Math.random() * 10000)}`,
+        payload: `testing testing`
+      },
+        source,
+        "detailType": "AnyEvent",
+        eventBusName
+      }
+    const sender = new EventSender<EventTypes.AnyEvent>(source, eventBusName);
+    console.log(event);
+    const response = await sender.sendEvent(event);
+    console.log(response);
+  }
+
+
   const opt = process.argv[2];
   if(opt === "media") {
     sendMediaEvent();
@@ -98,4 +134,12 @@ export const putEvents = async (
 
   if(opt === "learning") {
     sendLearningTrendEvent();
+  }
+
+  if(opt == "prohire") {
+    sendTalentPlacementEvent();
+  }
+
+  if(opt == "jeffrey") {
+    sendMachineLearningEvent();
   }

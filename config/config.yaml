@@ -1,5 +1,17 @@
 # TODO: need implement field validator
 eventbus:
+- name: jeffrey-machine-learning
+  topics:
+  - name: AnyEvent
+    schemaFile: gen-ai/any-event.json
+- name: prohire
+  topics:
+  - name: TalentPlacement
+    schemaFile: prohire/talent-placement.json
+- name: media-solution
+  topics:
+  - name: AdCampaignPublished
+    schemaFile: media-solution/ad-campaign.json
 - name: smarthire
   topics:
   - name: UserLoggedIn
@@ -31,14 +43,14 @@ connectors:
   topic: VideoCreated
   target: lambda
   targetParams:
-    lambdaSourcePath: dist/cdk/connector/example1.js
+    lambdaSourcePath: dist/cdk/connector/lambda/example1.js
 - name: example2-subs-ArticlePosted
   eventBusName: community
   source: community
   topic: ArticlePosted
   target: lambda
   targetParams:
-    lambdaSourcePath: dist/cdk/connector/example2.js
+    lambdaSourcePath: dist/cdk/connector/lambda/example2.js
 - name: example-subs-ArticlePosted
   eventBusName: community
   source: community 
@@ -55,3 +67,19 @@ connectors:
   targetParams:
     protocol: email
     subscription: razaly@seekasia.com
+- name: zlew-subs-LearningTrend
+  eventBusName: prohire
+  source: prohire 
+  topic: TalentPlacement
+  target: sns
+  targetParams:
+    protocol: email
+    subscription: zlew@seekasia.com
+- name: example-subs-ML
+  eventBusName: jeffrey-machine-learning
+  source: jeffrey-machine-learning 
+  topic: AnyEvent 
+  target: sns
+  targetParams:
+    protocol: email
+    subscription: kobtan@seekasia.com

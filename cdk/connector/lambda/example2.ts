@@ -1,6 +1,6 @@
 import { Handler } from 'aws-lambda';
 
-import { ArticlePosted } from '../../types';
+import { ArticlePosted } from '../../../types';
 
 export const handler: Handler = async (busEvent: ArticlePosted, context, callback) => {
     console.log("Received event: ", busEvent);

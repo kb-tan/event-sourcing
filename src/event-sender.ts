@@ -17,9 +17,9 @@ export class EventSender<T extends EventType.Every> {
     }
 
     async sendEvent(event:T): Promise<unknown> {
-        if(event.source !== this.source || event.eventBusName !== this.eventBusName) {
-            return Promise.resolve(`Unmatched source or eventBus value.`);
-        }
+        // if(event.source !== this.source || event.eventBusName !== this.eventBusName) {
+        //     return Promise.resolve(`Unmatched source or eventBus value.`);
+        // }
         const response = await this.client.send(
             new PutEventsCommand({
               Entries: [

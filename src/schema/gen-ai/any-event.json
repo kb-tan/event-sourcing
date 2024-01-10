@@ -1,0 +1,17 @@
+{
+    "properties":  {
+        "data": {
+          "type": "object",
+          "properties":  { 
+            "eventId": {
+                "type": "string"
+            },
+            "payload": {
+                "type": "string"
+            }
+          },
+          "required": ["eventId", "payload"]
+        }
+    },
+    "required": ["data"]
+}
