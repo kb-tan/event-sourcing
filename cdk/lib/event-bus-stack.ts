@@ -5,6 +5,7 @@ import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Construct } from "constructs";
 import { EventBusProps, IEventBus, IArchive, IConnector, ConnectorTarget } from '../../src/config';
 import { SNSConnector, SNSConnectorProps } from './constructs/sns-connector';
+import { SQSConnector, SQSConnectorProps } from './constructs/sqs-connector';
 
 export class EventBusStack extends Stack {
  
@@ -66,6 +67,15 @@ export class EventBusStack extends Stack {
             source: sub.source,
             protocol: snsProps.protocol,
             subscription: snsProps.subscription,
+          })
+        } else if(sub.target === ConnectorTarget.SQS) {
+          const sqsProps = sub.targetParams as SQSConnectorProps;
+          new SQSConnector(_this, connectorName, {
+            name: sub.name,
+            accountId: _this.account,
+            detailType: sub.topic,
+            eventBus: bus,
+            source: sub.source,
           })
         }
       }) 
